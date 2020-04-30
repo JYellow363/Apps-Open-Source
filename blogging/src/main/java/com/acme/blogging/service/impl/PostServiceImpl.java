@@ -2,7 +2,9 @@ package com.acme.blogging.service.impl;
 
 import com.acme.blogging.exception.ResourceNotFoundException;
 import com.acme.blogging.model.Post;
+import com.acme.blogging.model.Tag;
 import com.acme.blogging.repository.PostRepository;
+import com.acme.blogging.repository.TagRepository;
 import com.acme.blogging.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,21 +18,36 @@ import java.util.List;
 
 @Service
 public class PostServiceImpl implements PostService {
-    /*@Autowired
-    private TagRepository tagRepository;*/
 
     @Autowired
     private PostRepository postRepository;
 
+    @Autowired
+    private TagRepository tagRepository;
 
     @Override
-    public Post assignPostTag(Long postId, Long tagId) {
-        return null;
+    public Post assignPostTag(Long postId, Long tagId){
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(()->new ResourceNotFoundException("Tag","Id",tagId));
+
+        return postRepository.findById(postId).map(post->{
+            if(!post.getTags().contains(tag)){
+                post.getTags().add(tag);
+                return postRepository.save(post);
+            }
+            return post;
+        }).orElseThrow(()->new ResourceNotFoundException("Post","Id",postId));
     }
 
     @Override
     public Post unassignPostTag(Long postId, Long tagId) {
-        return null;
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(() -> new ResourceNotFoundException("Tag", "Id", tagId));
+
+        return postRepository.findById(postId).map(post -> {
+            post.getTags().remove(tag);
+            return postRepository.save(post);
+        }).orElseThrow(() -> new ResourceNotFoundException("Post", "Id", postId));
     }
 
     @Override

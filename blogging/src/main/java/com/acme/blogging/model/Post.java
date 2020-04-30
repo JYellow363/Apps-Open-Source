@@ -39,4 +39,18 @@ public class Post extends AuditModel {
     private String content;
 
 
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+
+    // Table     posts_tags
+    // post_id   tag_id
+    // (pk/fk)   (pk/fk)
+
+    @JoinTable(
+            name="post_tags",
+            joinColumns = {@JoinColumn(name="post_id")},
+            inverseJoinColumns = {@JoinColumn(name="tag_id")}
+    )
+
+    @JsonIgnore
+    private List<Tag> tags;
 }
